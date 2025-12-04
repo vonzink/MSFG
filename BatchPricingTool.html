@@ -276,6 +276,7 @@
         <input type="text" id="searchBox" placeholder="Search borrowers..." style="flex: 1; max-width: 300px; background: var(--chip); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 8px;">
         <button class="btn" id="exportExcelBtn">Export to Excel</button>
         <button class="btn" id="exportCsvBtn">Export to CSV</button>
+        <button class="btn" id="exportPdfBtn">Export to PDF</button>
         <button class="btn" id="resetBtn">Start Over</button>
       </div>
 
@@ -313,6 +314,8 @@
 
   <!-- SheetJS Library for Excel support -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+  <!-- html2pdf.js library for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <script type="module" src="batch-pricing.js?v=2.2"></script>
 </body>

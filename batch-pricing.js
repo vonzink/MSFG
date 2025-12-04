@@ -94,14 +94,14 @@ function calculateLLPMAdjustments(borrowerData, globalInputs) {
     totalAdjustments += creditScoreAdj;
   }
 
-  // Product Type
+  // Loan Type (formerly Product Type)
   const productType = borrowerData.productType || 'Fixed';
   const productTypeAdj = programAdjustments.productType[productType] || 0;
   if (productTypeAdj !== 0) {
     adjustments.push({
-      name: `Product ${productType}`,
+      name: `Loan Type ${productType}`,
       points: productTypeAdj,
-      reason: 'Product type adjustment'
+      reason: 'Loan type adjustment'
     });
     totalAdjustments += productTypeAdj;
   }
@@ -189,9 +189,15 @@ function calculateBorrowerPricing(borrowerData, globalInputs) {
   const adjustedRate = baseRate; // Rate stays the same, points change the cost
   const pointCost = borrowerData.loanAmount * (finalPoints / 100);
 
-  // Calculate current rate from current payment (reverse mortgage calculation)
-  // This is an approximation - solving for rate from payment is complex
-  const currentRate = estimateRateFromPayment(borrowerData.loanAmount, borrowerData.currentPayment || 0);
+  // Use mapped old rate if available, otherwise estimate from payment
+  let currentRate;
+  if (borrowerData.currentRate != null && borrowerData.currentRate > 0) {
+    currentRate = borrowerData.currentRate;
+  } else {
+    // Calculate current rate from current payment (reverse mortgage calculation)
+    // This is an approximation - solving for rate from payment is complex
+    currentRate = estimateRateFromPayment(borrowerData.loanAmount, borrowerData.currentPayment || 0);
+  }
 
   // Calculate new payment with adjusted rate (points affect cost, not rate for display purposes)
   // But in reality, if they pay points, they might get a lower rate. For now, we show the base rate.
@@ -331,11 +337,12 @@ function autoDetectMapping(headers) {
     zipCode: /^(zip.*code|zip|postal)/i,
     creditScore: /^(credit.*score|fico|score)/i,
     loanProgram: /^(loan.*program|program|loan.*type)/i,
-    productType: /^(product.*type|product|mortgage.*type)/i,
+    productType: /^(product.*type|product|mortgage.*type|loan.*type)/i,
     propertyType: /^(property.*type|home.*type|type)/i,
     occupancy: /^(occupancy|occupancy.*type)/i,
     currentPayment: /^(current.*payment|payment|monthly.*payment)/i,
-    units: /^(units|number.*units)/i
+    units: /^(units|number.*units)/i,
+    currentRate: /^(old.*rate|current.*rate|note.*rate|rate|interest.*rate|existing.*rate)/i
   };
 
   headers.forEach(header => {
@@ -385,7 +392,8 @@ function transformRowData(row, mapping) {
     propertyType: String(row[mapping.propertyType] || 'Single Family').trim(),
     occupancy: String(row[mapping.occupancy] || 'Primary').trim(),
     currentPayment: parseMoney(row[mapping.currentPayment] || 0),
-    units: String(row[mapping.units] || '1').trim()
+    units: String(row[mapping.units] || '1').trim(),
+    currentRate: row[mapping.currentRate] ? parsePercent(row[mapping.currentRate]) : null
   };
 }
 
@@ -426,10 +434,11 @@ function renderColumnMapping(headers, autoMapping) {
     { key: 'zipCode', label: 'Zip Code', required: false },
     { key: 'creditScore', label: 'Credit Score', required: true },
     { key: 'loanProgram', label: 'Loan Program', required: false },
-    { key: 'productType', label: 'Product Type', required: false },
+    { key: 'productType', label: 'Loan Type', required: false },
     { key: 'propertyType', label: 'Property Type', required: false },
     { key: 'occupancy', label: 'Occupancy', required: false },
     { key: 'currentPayment', label: 'Current Payment', required: true },
+    { key: 'currentRate', label: 'Old Rate / Note Rate', required: false },
     { key: 'units', label: 'Units', required: false }
   ];
 
@@ -482,7 +491,7 @@ function getCurrentMapping() {
   const mapping = {};
   const fields = ['clientName', 'loanAmount', 'propertyValue', 'income', 'zipCode',
                   'creditScore', 'loanProgram', 'productType', 'propertyType',
-                  'occupancy', 'currentPayment', 'units'];
+                  'occupancy', 'currentPayment', 'currentRate', 'units'];
 
   fields.forEach(field => {
     const select = $(`#map-${field}`);
@@ -809,6 +818,103 @@ function exportToExcel() {
   XLSX.writeFile(workbook, 'batch-pricing-results.xlsx');
 }
 
+async function exportToPDF() {
+  const resultsSection = $('#resultsSection');
+  if (!resultsSection || !window.currentResults || window.currentResults.length === 0) {
+    alert('No results to export. Please calculate pricing first.');
+    return;
+  }
+
+  // Create a temporary container for PDF export
+  const tempContainer = document.createElement('div');
+  tempContainer.style.position = 'absolute';
+  tempContainer.style.left = '-9999px';
+  tempContainer.style.width = '1400px';
+  tempContainer.style.backgroundColor = '#121821';
+  tempContainer.style.color = '#e9eef5';
+  tempContainer.style.padding = '20px';
+  tempContainer.style.fontFamily = 'system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, sans-serif';
+
+  // Add title
+  const title = document.createElement('h1');
+  title.textContent = 'MSFG Batch Pricing Results';
+  title.style.color = '#e9eef5';
+  title.style.marginBottom = '20px';
+  title.style.fontSize = '24px';
+  title.style.fontWeight = 'bold';
+  tempContainer.appendChild(title);
+
+  // Add stats summary
+  const stats = $('#statsContainer');
+  if (stats) {
+    const statsClone = stats.cloneNode(true);
+    statsClone.style.marginBottom = '20px';
+    tempContainer.appendChild(statsClone);
+  }
+
+  // Clone the table container
+  const tableContainer = $('#resultsSection .table-container');
+  if (tableContainer) {
+    const tableClone = tableContainer.cloneNode(true);
+    // Make sure table is visible and styled for PDF
+    tableClone.style.maxHeight = 'none';
+    tableClone.style.overflow = 'visible';
+    tempContainer.appendChild(tableClone);
+  }
+
+  document.body.appendChild(tempContainer);
+
+  const opt = {
+    margin: [10, 10, 10, 10],
+    filename: `batch-pricing-results-${Date.now()}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { 
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#121821',
+      logging: false,
+      width: 1400,
+      height: tempContainer.scrollHeight
+    },
+    jsPDF: { 
+      unit: 'mm', 
+      format: 'a4', 
+      orientation: 'landscape' 
+    }
+  };
+
+  try {
+    // Show loading indicator
+    const btn = $('#exportPdfBtn');
+    const originalText = btn.textContent;
+    btn.textContent = 'Generating PDF...';
+    btn.disabled = true;
+
+    await html2pdf().set(opt).from(tempContainer).save();
+
+    // Clean up
+    document.body.removeChild(tempContainer);
+    
+    // Restore button
+    btn.textContent = originalText;
+    btn.disabled = false;
+  } catch (error) {
+    console.error('PDF export error:', error);
+    alert('Failed to generate PDF. Please try again.');
+    
+    // Clean up on error
+    if (tempContainer.parentNode) {
+      document.body.removeChild(tempContainer);
+    }
+    
+    const btn = $('#exportPdfBtn');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Export to PDF';
+    }
+  }
+}
+
 /**
  * Download file helper
  */
@@ -910,6 +1016,7 @@ function wireEvents() {
   // Export buttons
   $('#exportCsvBtn').addEventListener('click', exportToCSV);
   $('#exportExcelBtn').addEventListener('click', exportToExcel);
+  $('#exportPdfBtn').addEventListener('click', exportToPDF);
 
   // Reset button
   $('#resetBtn').addEventListener('click', () => {

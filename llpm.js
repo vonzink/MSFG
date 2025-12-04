@@ -533,6 +533,56 @@ function printView() {
   window.print();
 }
 
+async function exportToPDF() {
+  // Get the snapshot card (the right card in the grid)
+  const grid = $('.grid');
+  const snapshotCard = grid ? grid.querySelectorAll('.card')[1] : null;
+  
+  if (!snapshotCard) {
+    alert('No data to export. Please calculate pricing first.');
+    return;
+  }
+
+  const opt = {
+    margin: [10, 10, 10, 10],
+    filename: `llpm-pricing-${Date.now()}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { 
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#121821',
+      logging: false
+    },
+    jsPDF: { 
+      unit: 'mm', 
+      format: 'a4', 
+      orientation: 'portrait' 
+    }
+  };
+
+  try {
+    // Show loading indicator
+    const btn = $('#btnPdf');
+    const originalText = btn.textContent;
+    btn.textContent = 'Generating PDF...';
+    btn.disabled = true;
+
+    await html2pdf().set(opt).from(snapshotCard).save();
+
+    // Restore button
+    btn.textContent = originalText;
+    btn.disabled = false;
+  } catch (error) {
+    console.error('PDF export error:', error);
+    alert('Failed to generate PDF. Please try again.');
+    const btn = $('#btnPdf');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Export PDF';
+    }
+  }
+}
+
 function clearAll() {
   console.log('Clear All clicked');
   
@@ -730,6 +780,7 @@ function wireEvents() {
   });
   $('#btnClear').addEventListener('click', clearAll);
   $('#btnCsv').addEventListener('click', exportCSV);
+  $('#btnPdf').addEventListener('click', exportToPDF);
   $('#btnPrint').addEventListener('click', printView);
   $('#btnShare').addEventListener('click', copyShareLink);
   
