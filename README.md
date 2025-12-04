@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # MSFG Batch Pricing Tool
 
 A web-based tool for calculating Loan Level Pricing Adjustments (LLPM) for multiple borrowers simultaneously.
