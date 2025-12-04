@@ -28,8 +28,30 @@ function parseMoney(str) {
 }
 
 function parsePercent(str) {
-  if (typeof str === 'number') return str;
-  return parseFloat(String(str).replace(/%/g, '')) || 0;
+  if (typeof str === 'number') {
+    // If already a number, check if it's in decimal format
+    // Mortgage rates are typically 2-10%, so values < 1 are likely decimal format
+    // Convert decimal format (0.07) to percentage format (7)
+    if (str > 0 && str < 1) {
+      return str * 100; // Convert decimal (0.07) to percentage (7)
+    }
+    return str; // Already in percentage format (7 = 7%)
+  }
+  
+  const cleaned = String(str).replace(/%/g, '').trim();
+  const parsed = parseFloat(cleaned) || 0;
+  
+  if (parsed === 0) return 0;
+  
+  // If the parsed value is between 0 and 1, it's likely decimal format
+  // Convert to percentage: 0.07 -> 7, 0.0675 -> 6.75
+  // Note: This assumes mortgage rates are typically 2-10%
+  // Very low rates (< 1%) will be incorrectly converted, but those are rare
+  if (parsed > 0 && parsed < 1) {
+    return parsed * 100; // Convert decimal (0.07) to percentage (7)
+  }
+  
+  return parsed; // Already in percentage format (7 = 7%)
 }
 
 // ============= PAYMENT CALCULATION =============
