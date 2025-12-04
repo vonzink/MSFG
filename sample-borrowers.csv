@@ -1,0 +1,11 @@
+Client Name,Loan Amount,Property Value,Income,Zip Code,Credit Score,Loan Program,Product Type,Property Type,Occupancy,Current Payment,Units
+John Smith,450000,500000,85000,90210,720,Conventional,Fixed,Single Family,Primary,2800,1
+Sarah Johnson,350000,400000,65000,10001,680,FHA,Fixed,Condo,Primary,2200,1
+Michael Brown,600000,750000,120000,98101,760,Conventional,ARM,Single Family,Primary,3500,1
+Emily Davis,280000,320000,55000,33101,700,VA,Fixed,Single Family,Primary,1750,1
+Robert Wilson,525000,600000,95000,60601,740,Conventional,Fixed,Manufactured Home,Primary,3100,1
+Jennifer Martinez,400000,500000,72000,77001,690,FHA,Fixed,Single Family,Secondary Home,2500,1
+David Anderson,750000,850000,145000,94101,780,Conventional,Fixed,Condo,Investment,4200,2
+Lisa Taylor,320000,380000,58000,85001,660,USDA,Fixed,Single Family,Primary,2000,1
+James Thomas,480000,600000,88000,20001,710,Conventional,ARM,Single Family,Primary,2900,1
+Mary Garcia,365000,420000,68000,30001,695,FHA,Fixed,Single Family,Primary,2300,1

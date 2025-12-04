@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MSFG • Pricing Tools</title>
+  <style>
+    :root {
+      --bg: #0b0f14; --panel: #121821; --muted: #a4b1c2; --text: #e9eef5;
+      --ok: #2ecc71; --warn: #f39c12; --need: #e74c3c; --accent: #00d4ff; --border: #223042; --chip: #1a2230;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, sans-serif; background: radial-gradient(80vw 80vh at 75% -10%, #0f1724, var(--bg)); color: var(--text); display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .container { max-width: 900px; width: 100%; }
+    header { text-align: center; margin-bottom: 48px; }
+    .logo { width: 80px; height: 80px; border-radius: 20px; background-image: url('https://msfg-media.s3.us-west-2.amazonaws.com/Assets/LOGOS/MSFG+Home+Loans/MSFG-Color-Transparent.png'); background-size: contain; background-repeat: no-repeat; background-position: center; box-shadow: 0 0 32px #00d4ff44; margin: 0 auto 24px; }
+    h1 { font-size: 32px; margin: 0 0 12px; letter-spacing: .5px; }
+    .subtitle { color: var(--muted); font-size: 16px; }
+    .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 48px; }
+    .tool-card { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 32px; box-shadow: 0 10px 40px rgba(0,0,0,.3); transition: .3s ease; text-decoration: none; display: block; }
+    .tool-card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 20px 50px rgba(0,212,255,.2); }
+    .tool-icon { font-size: 48px; margin-bottom: 16px; }
+    .tool-title { font-size: 20px; font-weight: 700; margin: 0 0 12px; color: var(--text); }
+    .tool-desc { color: var(--muted); font-size: 14px; line-height: 1.6; margin: 0 0 20px; }
+    .tool-features { list-style: none; padding: 0; margin: 0 0 24px; }
+    .tool-features li { font-size: 13px; color: var(--muted); padding: 6px 0; padding-left: 24px; position: relative; }
+    .tool-features li::before { content: '✓'; position: absolute; left: 0; color: var(--ok); font-weight: bold; }
+    .launch-btn { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(180deg, #00d4ff, #0099cc); border: 1px solid #00d4ff; color: var(--bg); padding: 12px 24px; border-radius: 12px; font-weight: 600; text-decoration: none; transition: .2s ease; }
+    .launch-btn:hover { box-shadow: 0 4px 16px #00d4ff66; transform: scale(1.02); }
+    .footer { text-align: center; padding: 32px 0; border-top: 1px solid var(--border); }
+    .footer-links { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+    .footer-links a { color: var(--muted); text-decoration: none; font-size: 14px; transition: .2s ease; }
+    .footer-links a:hover { color: var(--accent); }
+    .footer-text { color: var(--muted); font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo" aria-hidden="true"></div>
+      <h1>MSFG Pricing Tools</h1>
+      <p class="subtitle">Professional loan pricing calculators with LLPM adjustments</p>
+    </header>
+
+    <div class="tools-grid">
+      <!-- Batch Pricing Tool -->
+      <a href="BatchPricingTool.html" class="tool-card">
+        <div class="tool-icon">📊</div>
+        <h2 class="tool-title">Batch Pricing Tool</h2>
+        <p class="tool-desc">Process multiple borrowers at once with CSV/Excel upload. Perfect for portfolio analysis and bulk pricing.</p>
+        <ul class="tool-features">
+          <li>Upload CSV or Excel files</li>
+          <li>Process 100+ loans at once</li>
+          <li>Auto-detect columns</li>
+          <li>Export results to Excel/CSV</li>
+          <li>Sort and filter results</li>
+        </ul>
+        <div class="launch-btn">
+          Launch Batch Tool
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+          </svg>
+        </div>
+      </a>
+
+      <!-- Single Loan Tool -->
+      <a href="LLPMTool.html" class="tool-card">
+        <div class="tool-icon">🎯</div>
+        <h2 class="tool-title">Single Loan Pricing</h2>
+        <p class="tool-desc">Detailed pricing calculator for individual loans. See breakdown of all adjustments and credits.</p>
+        <ul class="tool-features">
+          <li>Interactive form inputs</li>
+          <li>Real-time calculations</li>
+          <li>Detailed adjustment breakdown</li>
+          <li>Share via URL</li>
+          <li>Print-friendly format</li>
+        </ul>
+        <div class="launch-btn">
+          Launch Single Tool
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+          </svg>
+        </div>
+      </a>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-links">
+        <a href="QUICKSTART.md" target="_blank">Quick Start Guide</a>
+        <a href="README.md" target="_blank">Documentation</a>
+        <a href="sample-borrowers.csv" download>Sample Data</a>
+        <a href="http://loan-tools-hub.s3-website-us-west-1.amazonaws.com">More Tools</a>
+      </div>
+      <p class="footer-text">
+        MSFG Home Loans • Pricing Tools v1.0 • All calculations run locally in your browser
+      </p>
+    </footer>
+  </div>
+</body>
+</html>

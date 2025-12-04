@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MSFG • Batch Pricing Tool</title>
+  <style>
+    :root {
+      --bg: #0b0f14; --panel: #121821; --muted: #a4b1c2; --text: #e9eef5;
+      --ok: #2ecc71; --warn: #f39c12; --need: #e74c3c; --accent: #00d4ff; --border: #223042; --chip: #1a2230;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, sans-serif; background: radial-gradient(80vw 80vh at 75% -10%, #0f1724, var(--bg)); color: var(--text); }
+    header { padding: 24px 20px 8px; position: sticky; top: 0; background: linear-gradient(180deg, rgba(11,15,20,.95), rgba(11,15,20,.75) 60%, transparent); backdrop-filter: blur(4px); z-index: 100; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .back-link { display:flex; align-items:center; gap:6px; color: var(--muted); text-decoration: none; font-size: 12px; padding: 6px 10px; border-radius: 6px; transition: .2s ease; border: 1px solid var(--border); }
+    .back-link:hover { color: var(--text); border-color: var(--accent); background: #00d4ff11; }
+    .logo { width: 40px; height: 40px; border-radius: 10px; background-image: url('https://msfg-media.s3.us-west-2.amazonaws.com/Assets/LOGOS/MSFG+Home+Loans/MSFG-Color-Transparent.png'); background-size: contain; background-repeat: no-repeat; background-position: center; box-shadow: 0 0 24px #00d4ff33; }
+    h1 { font-size: 20px; margin: 0; letter-spacing: .3px; }
+    main { max-width: 1400px; margin: 0 auto; padding: 12px 20px 60px; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,.25); margin-bottom: 20px; }
+    .card h2 { font-size: 16px; margin: 0 0 16px; font-weight: 650; letter-spacing: .2px; }
+    .subtle { color: var(--muted); font-size: 13px; }
+
+    /* Upload Zone */
+    .upload-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 40px 20px; text-align: center; cursor: pointer; transition: .2s ease; }
+    .upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); background: #00d4ff11; }
+    .upload-zone.has-file { border-color: var(--ok); background: #2ecc7111; }
+    .upload-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+    .file-input { display: none; }
+
+    /* Input Grid */
+    .input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
+    .input-group { display: flex; flex-direction: column; gap: 6px; }
+    .input-group label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+    .input-group input, .input-group select { background: var(--chip); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 8px; font-size: 14px; }
+    .input-group input:focus, .input-group select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px #00d4ff22 inset; }
+
+    /* Radio pills */
+    .radio-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .radio-pills label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .radio-pills input[type="radio"] { display: none; }
+    .radio-pills span { background: var(--chip); border: 1px solid var(--border); padding: 8px 16px; border-radius: 999px; font-size: 13px; transition: .2s ease; }
+    .radio-pills input[type="radio"]:checked + span { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 600; }
+
+    /* Toggle */
+    .toggle-group { display: flex; align-items: center; gap: 10px; }
+    .toggle { position: relative; width: 44px; height: 24px; background: var(--border); border-radius: 999px; cursor: pointer; transition: .2s ease; }
+    .toggle.active { background: var(--accent); }
+    .toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: var(--text); border-radius: 50%; transition: .2s ease; }
+    .toggle.active::after { transform: translateX(20px); }
+
+    /* Buttons */
+    .btn { display:inline-flex; gap:8px; align-items:center; justify-content: center; background: linear-gradient(180deg, #0f2533, #0a1a25); border:1px solid #2a425b; color: var(--text); padding: 12px 20px; border-radius: 12px; cursor: pointer; text-decoration: none; font-weight:600; font-size: 14px; transition: .2s ease; }
+    .btn:hover { border-color: var(--accent); box-shadow: 0 0 0 3px #00d4ff22 inset; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: linear-gradient(180deg, #00d4ff, #0099cc); border-color: #00d4ff; color: var(--bg); }
+    .btn-primary:hover { box-shadow: 0 4px 12px #00d4ff44; }
+
+    /* Stats */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .stat { background: var(--chip); border: 1px solid var(--border); padding: 16px; border-radius: 12px; }
+    .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 6px; }
+    .stat-value { font-size: 24px; font-weight: 700; color: var(--text); }
+
+    /* Table */
+    .table-container { overflow-x: auto; max-height: 600px; overflow-y: auto; border: 1px solid var(--border); border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead { position: sticky; top: 0; background: var(--panel); z-index: 10; }
+    th { padding: 12px 10px; border-bottom: 2px solid var(--border); text-align: left; font-weight: 600; color: var(--muted); text-transform: uppercase; font-size: 11px; letter-spacing: .5px; cursor: pointer; user-select: none; }
+    th:hover { color: var(--accent); }
+    th.sortable::after { content: ' ↕'; opacity: 0.3; }
+    th.sorted-asc::after { content: ' ↑'; opacity: 1; color: var(--accent); }
+    th.sorted-desc::after { content: ' ↓'; opacity: 1; color: var(--accent); }
+    td { padding: 10px; border-bottom: 1px solid #213046; vertical-align: middle; }
+    tr:hover td { background: #0f1520; }
+    .positive { color: var(--ok); }
+    .negative { color: var(--need); }
+    .neutral { color: var(--muted); }
+
+    /* Status messages */
+    .status-message { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; }
+    .status-message.info { background: #1a2a3a; border: 1px solid #2a4a6a; color: #6bb6ff; }
+    .status-message.success { background: #1a2a1a; border: 1px solid #2a4a2a; color: #6bff6b; }
+    .status-message.warning { background: #2a2a1a; border: 1px solid #4a4a2a; color: #ffeb3b; }
+    .status-message.error { background: #2a1a1a; border: 1px solid #4a2a2a; color: #ff6b6b; }
+
+    .hidden { display: none; }
+
+    /* Modal */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; align-items: center; justify-content: center; }
+    .modal.show { display: flex; }
+    .modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
+    .modal-content { position: relative; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 32px; max-width: 700px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.5); z-index: 1001; }
+    .modal-content h3 { margin: 0 0 20px; font-size: 20px; color: var(--text); }
+    .modal-summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; padding: 16px; background: var(--chip); border: 1px solid var(--border); border-radius: 12px; }
+    .modal-summary div { font-size: 14px; }
+    .breakdown-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    .breakdown-table th, .breakdown-table td { padding: 10px; border-bottom: 1px solid var(--border); text-align: left; font-size: 13px; }
+    .breakdown-table th { background: var(--chip); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: .5px; color: var(--muted); }
+    .breakdown-table tr:last-child td { border-bottom: none; }
+
+    /* Points breakdown button */
+    .points-breakdown-btn { background: linear-gradient(180deg, #0f2533, #0a1a25); border: 1px solid #2a425b; color: var(--text); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: .2s ease; }
+    .points-breakdown-btn:hover { border-color: var(--accent); box-shadow: 0 0 0 2px #00d4ff22 inset; }
+
+    /* Small text in table */
+    .subtle { color: var(--muted); font-size: 11px; }
+
+    /* Break-even highlight */
+    .break-even-highlight { background: rgba(46, 204, 113, 0.15) !important; border-left: 3px solid var(--ok); }
+    .break-even-highlight:hover { background: rgba(46, 204, 113, 0.25) !important; }
+
+    /* Actions Bar */
+    .actions-bar { display: flex; gap: 12px; justify-content: flex-end; align-items: center; flex-wrap: wrap; }
+
+    /* Column Mapping */
+    .mapping-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+    .mapping-item { display: flex; flex-direction: column; gap: 6px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <a href="http://loan-tools-hub.s3-website-us-west-1.amazonaws.com" class="back-link">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Back to Hub
+      </a>
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>MSFG • Batch Pricing Tool</h1>
+        <div class="subtle">Upload CSV/Excel with borrower data to calculate adjusted rates and payments for multiple loans</div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Upload Section -->
+    <div class="card">
+      <h2>1. Upload Borrower Data</h2>
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">📊</div>
+        <div><strong>Drag & drop your CSV or Excel file here</strong></div>
+        <div class="subtle" style="margin-top: 8px;">or click to browse</div>
+        <div class="subtle" style="margin-top: 12px; font-size: 11px;">Expected columns: Client Name, Loan Amount, Property Value, Income, Zip Code, Credit Score, Loan Program, Product Type, Property Type, Occupancy, Current Payment</div>
+      </div>
+      <input type="file" id="fileInput" class="file-input" accept=".csv,.xlsx,.xls" />
+
+      <div id="fileInfo" class="status-message info hidden" style="margin-top: 16px;"></div>
+      <div id="errorMessage" class="status-message error hidden" style="margin-top: 16px;"></div>
+    </div>
+
+    <!-- Column Mapping Section -->
+    <div class="card hidden" id="mappingSection">
+      <h2>2. Verify Column Mapping</h2>
+      <div class="subtle" style="margin-bottom: 16px;">We've automatically detected your columns. Please verify or adjust the mapping below:</div>
+      <div class="mapping-grid" id="mappingGrid"></div>
+      <button class="btn btn-primary" id="confirmMapping">Confirm Mapping & Continue</button>
+    </div>
+
+    <!-- Global Inputs Section -->
+    <div class="card hidden" id="inputsSection">
+      <h2>3. Set Pricing Parameters</h2>
+
+      <div class="input-grid">
+        <div class="input-group">
+          <label for="baseRate">Base Rate (%)</label>
+          <input type="number" id="baseRate" step="0.001" value="6.750" />
+        </div>
+        <div class="input-group">
+          <label for="startingPoints">Starting Points (±)</label>
+          <input type="number" id="startingPoints" step="0.001" value="0.000" />
+        </div>
+        <div class="input-group">
+          <label for="newLoanProgram">New Loan Program</label>
+          <select id="newLoanProgram">
+            <option value="Conventional">Conventional</option>
+            <option value="FHA">FHA</option>
+            <option value="VA">VA</option>
+            <option value="USDA">USDA</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label for="newRefinanceType">New Program Type</label>
+          <select id="newRefinanceType">
+            <option value="RateTerm">Rate/Term Refi</option>
+            <option value="CashOut">Cash-Out Refi</option>
+            <option value="Purchase">Purchase</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-grid" style="margin-top: 16px;">
+        <div class="input-group">
+          <label for="breakEvenThreshold">Break-Even Highlight Threshold (months)</label>
+          <select id="breakEvenThreshold">
+            <option value="12">12 months</option>
+            <option value="18" selected>18 months</option>
+            <option value="24">24 months</option>
+            <option value="36">36 months</option>
+            <option value="48">48 months</option>
+            <option value="60">60 months</option>
+            <option value="999999">No highlight</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="toggle-group" style="margin-top: 16px;">
+        <div class="toggle" id="homeReadyEligible"></div>
+        <label for="homeReadyEligible">HomeReady® / LLPA Waiver Eligible (applies to all borrowers)</label>
+      </div>
+
+      <details style="margin-top: 24px;">
+        <summary style="cursor: pointer; color: var(--muted); font-size: 13px; padding: 8px 0; user-select: none;">⚙️ Advanced: Edit LLPM Adjustment Matrix</summary>
+        <div style="margin-top: 12px;">
+          <p class="subtle" style="margin-bottom: 12px;">Customize pricing adjustments for each loan program. Changes are saved to browser storage and persist across sessions.</p>
+
+          <div class="input-group" style="margin-bottom: 12px;">
+            <label for="matrixLoanProgram">Select Loan Program</label>
+            <select id="matrixLoanProgram" style="background: var(--chip); border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: 8px;">
+              <option value="Conventional">Conventional</option>
+              <option value="FHA">FHA</option>
+              <option value="VA">VA</option>
+              <option value="USDA">USDA</option>
+            </select>
+          </div>
+
+          <textarea id="llpmMatrixEditor" style="width: 100%; height: 300px; background: var(--chip); border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 8px; font-family: monospace; font-size: 12px; resize: vertical;"></textarea>
+
+          <div style="display: flex; gap: 12px; margin-top: 12px;">
+            <button class="btn" id="btnLoadMatrix">Load Current Matrix</button>
+            <button class="btn btn-primary" id="btnSaveMatrix">Save Matrix</button>
+            <button class="btn" id="btnResetMatrix">Reset to Default</button>
+          </div>
+
+          <div id="matrixStatus" class="status-message info hidden" style="margin-top: 12px;"></div>
+        </div>
+      </details>
+
+      <div class="actions-bar" style="margin-top: 24px;">
+        <button class="btn btn-primary" id="calculateBtn">Calculate Pricing</button>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="card hidden" id="resultsSection">
+      <h2>4. Results</h2>
+
+      <div class="stats" id="statsContainer">
+        <div class="stat">
+          <div class="stat-label">Total Loans</div>
+          <div class="stat-value" id="statTotal">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Loans Saving Money</div>
+          <div class="stat-value positive" id="statSavings">0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Total Loan Volume</div>
+          <div class="stat-value" id="statVolume">$0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Avg. Rate Adjustment</div>
+          <div class="stat-value" id="statAvgRate">0.000%</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Avg. Payment Change</div>
+          <div class="stat-value" id="statAvgSavings">$0</div>
+        </div>
+      </div>
+
+      <div class="actions-bar">
+        <input type="text" id="searchBox" placeholder="Search borrowers..." style="flex: 1; max-width: 300px; background: var(--chip); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 8px;">
+        <button class="btn" id="exportExcelBtn">Export to Excel</button>
+        <button class="btn" id="exportCsvBtn">Export to CSV</button>
+        <button class="btn" id="resetBtn">Start Over</button>
+      </div>
+
+      <div class="table-container" style="margin-top: 16px;">
+        <table id="resultsTable">
+          <thead>
+            <tr>
+              <th class="sortable" data-column="clientName">Client Name</th>
+              <th class="sortable" data-column="propertyValue">Property Value</th>
+              <th class="sortable" data-column="loanAmount">Loan Amount</th>
+              <th class="sortable" data-column="income">Income</th>
+              <th class="sortable" data-column="zipCode">Zip</th>
+              <th class="sortable" data-column="creditScore">Credit</th>
+              <th class="sortable" data-column="currentLoanProgram">Curr. Program</th>
+              <th class="sortable" data-column="currentRate">Old Rate/Pmt</th>
+              <th class="sortable" data-column="adjustedRate">New Rate/Pmt</th>
+              <th class="sortable" data-column="paymentDiff">Payment Δ</th>
+              <th class="sortable" data-column="pointCost">Point Cost</th>
+              <th class="sortable" data-column="totalAdjustments">Points</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Breakdown Modal -->
+    <div id="breakdownModal" class="modal">
+      <div class="modal-overlay" onclick="closeBreakdownModal()"></div>
+      <div class="modal-content">
+        <div id="breakdownModalContent"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- SheetJS Library for Excel support -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+
+  <script type="module" src="batch-pricing.js?v=2.2"></script>
+</body>
+</html>
